@@ -1,13 +1,9 @@
 package de.workshops.bookshelf.book;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,56 +15,48 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
 @RequestMapping("/book")
 @Validated
 public class BookRestController {
-    private final ObjectMapper mapper;
-    private final ResourceLoader resourceLoader;
 
-    private List<Book> books;
+    private final BookService service;
 
-    public BookRestController(ObjectMapper mapper, ResourceLoader resourceLoader) {
-        this.mapper = mapper;
-        this.resourceLoader = resourceLoader;
-    }
-
-    @PostConstruct
-    public void init() throws IOException {
-        final var resource = resourceLoader.getResource("classpath:books.json");
-        this.books = mapper.readValue(resource.getInputStream(), new TypeReference<>() {});
+    public BookRestController(BookService service) {
+        this.service = service;
     }
 
     @GetMapping()
     public List<Book> getAllBooks() {
-        return books;
+        return service.getAllBooks();
     }
 
     @GetMapping("/{isbn}")
     public ResponseEntity<Book> getBookByIsbn(@PathVariable @Size(min = 10, max = 14) String isbn) {
-        final var foundBook = books.stream()
-                .filter(book -> hasIsbn(book, isbn))
-                .findAny()
-                .orElseThrow();
+        final var foundBook = service.getBookByIsbn(isbn);
         return ResponseEntity.ok(foundBook);
     }
 
     @GetMapping(params = "authorName")
     public Book getBookByAuthor(@RequestParam(name = "authorName") @NotBlank @Size(min = 3) String author) {
-        return books.stream()
-                .filter(book -> hasAuthor(book, author))
-                .findAny()
-                .orElseThrow();
+        return service.getBookByAuthor(author);
     }
 
     @PostMapping("/search")
-    public List<Book> search(@RequestBody @Valid BookSearchRequest searchRequest) {
-        return books.stream()
-                .filter(book -> hasIsbn(book, searchRequest.isbn()) || hasAuthor(book, searchRequest.authorName()))
-                .toList();
+    public ResponseEntity<List<Book>> search(@RequestBody @Valid BookSearchRequest searchRequest) {
+        final var foundBooks = service.searchForBooks(searchRequest);
+
+        if (foundBooks.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(foundBooks);
+    }
+
+    @PostMapping
+    public ResponseEntity<Book> createBook(@RequestBody Book book) {
+        return ResponseEntity.ok(book);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -76,11 +64,4 @@ public class BookRestController {
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 
-    private boolean hasIsbn(Book book, String isbn) {
-        return book.getIsbn().equals(isbn);
-    }
-
-    private boolean hasAuthor(Book book, String author) {
-        return book.getAuthor().contains(author);
-    }
 }

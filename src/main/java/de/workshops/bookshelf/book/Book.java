@@ -1,7 +1,10 @@
 package de.workshops.bookshelf.book;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+
 import java.util.Objects;
 
+@JacksonXmlRootElement
 public class Book {
     private String title;
     private String author;
