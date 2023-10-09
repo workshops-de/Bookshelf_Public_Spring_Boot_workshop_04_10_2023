@@ -1,0 +1,7 @@
+server:
+  port: 9090
+bookshelf:
+  title: Prod Bookshelf
+springdoc:
+  api-docs:
+    enabled: true

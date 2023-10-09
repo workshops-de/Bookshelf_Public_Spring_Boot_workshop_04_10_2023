@@ -1,0 +1,12 @@
+application:
+  title: '@project.name@'
+  version: '@project.version@'
+
+bookshelf:
+  title: "My Bookshelf"
+  capacity: 1000
+  version: "v1.0.0"
+
+springdoc:
+  api-docs:
+    enabled: false
