@@ -6,35 +6,33 @@ import java.util.List;
 
 @Service
 class BookService {
-    private final BookRepository repository;
+    private final BookJpaRepository repository;
 
-    BookService(BookRepository repository) {
+    BookService(BookJpaRepository repository) {
         this.repository = repository;
     }
 
     List<Book> getAllBooks() {
-        return repository.findAllBooks();
+        return repository.findAll();
     }
 
     Book getBookByIsbn (String isbn) {
-        return repository.findAllBooks().stream()
-                .filter(book -> hasIsbn(book, isbn))
-                .findAny()
-                .orElseThrow();
+        return repository.findByIsbn(isbn);
     }
 
     Book getBookByAuthor(String author) {
-        return repository.findAllBooks().stream()
+        return repository.findAll().stream()
                 .filter(book -> hasAuthor(book, author))
                 .findAny()
                 .orElseThrow();
     }
 
-
     List<Book> searchForBooks(BookSearchRequest searchRequest) {
-        return repository.findAllBooks().stream()
-                .filter(book -> hasIsbn(book, searchRequest.isbn()) || hasAuthor(book, searchRequest.authorName()))
-                .toList();
+        return repository.findByIsbnOrAuthorContaining(searchRequest.isbn(), searchRequest.authorName());
+    }
+
+    void createBook (Book book) {
+        repository.save(book);
     }
 
     private boolean hasIsbn(Book book, String isbn) {

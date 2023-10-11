@@ -1,15 +1,36 @@
 package de.workshops.bookshelf.book;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.NamedQuery;
 
 import java.util.Objects;
 
-@JacksonXmlRootElement
+@Entity
+@NamedQuery(name="getBookTitle", query = "select b.title from Book b where b.isbn = ?1")
 public class Book {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
+
     private String title;
     private String author;
+    @Column(length = 1000)
     private String description;
     private String isbn;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
 
     public String getTitle() {
         return title;

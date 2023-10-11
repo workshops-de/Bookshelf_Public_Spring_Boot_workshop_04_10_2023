@@ -56,6 +56,7 @@ public class BookRestController {
 
     @PostMapping
     public ResponseEntity<Book> createBook(@RequestBody Book book) {
+        service.createBook(book);
         return ResponseEntity.ok(book);
     }
 
