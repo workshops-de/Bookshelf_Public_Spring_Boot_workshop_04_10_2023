@@ -10,9 +10,13 @@ bookshelf:
 
 springdoc:
   api-docs:
-    enabled: false
+    enabled: true
 
 debug: false
+
+logging:
+  level:
+    org.springframework.security: debug
 
 spring:
   datasource:
@@ -33,3 +37,8 @@ spring:
   sql:
     init:
       mode: always
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

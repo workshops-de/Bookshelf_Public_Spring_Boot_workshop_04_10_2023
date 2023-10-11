@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -35,7 +36,9 @@ class BookRestControllerMockTest {
 
     @Captor
     ArgumentCaptor<String> isbnCaptor;
+
     @Test
+    @WithMockUser
     void shouldGetAllBooks() throws Exception {
         when(serviceMock.getAllBooks()).thenReturn(List.of());
 
@@ -44,11 +47,14 @@ class BookRestControllerMockTest {
                 .andReturn();
 
         final var payload = mvcResult.getResponse().getContentAsString();
-        List<Book> books = mapper.readValue(payload, new TypeReference<>() {});
+        List<Book> books = mapper.readValue(payload, new TypeReference<>() {
+        });
 
         assertThat(books).isEmpty();
     }
+
     @Test
+    @WithMockUser
     void getByIsbn() throws Exception {
         when(serviceMock.getBookByIsbn(isbnCaptor.capture())).thenReturn(null);
 
@@ -61,6 +67,7 @@ class BookRestControllerMockTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void shouldCreateBook() throws Exception {
         var isbn = "1234567890";
         var title = "My first book";
